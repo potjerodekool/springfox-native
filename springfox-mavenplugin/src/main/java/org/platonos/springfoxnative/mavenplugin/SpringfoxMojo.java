@@ -3,8 +3,6 @@ package org.platonos.springfoxnative.mavenplugin;
 import io.swagger.models.Swagger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -34,7 +32,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.servlet.http.HttpServletRequest;
 
-@Mojo(name = "dependency-counter", defaultPhase = LifecyclePhase.COMPILE)
+@Mojo(name = "springfox-native", defaultPhase = LifecyclePhase.COMPILE)
 public class SpringfoxMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
@@ -48,7 +46,7 @@ public class SpringfoxMojo extends AbstractMojo {
     }
 
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() {
         final Set<Artifact> dependencyArtifacts = getDependencyArtifacts();
 
         final List<URL> autoConfigs = new ArrayList<>();
@@ -65,14 +63,10 @@ public class SpringfoxMojo extends AbstractMojo {
 
         final org.platonos.springfoxnative.mavenplugin.Environment environment = new org.platonos.springfoxnative.mavenplugin.Environment();
 
-        final List<Class> classes = new ArrayList<>();
-
-        classes.addAll(
-            classDefinitions.stream()
-                    .filter(classDefinition -> classDefinition.isEnabled(environment))
-                    .map(org.platonos.springfoxnative.mavenplugin.ClassDefinition::loadClass)
-                    .filter(Objects::nonNull).collect(Collectors.toList())
-        );
+        final List<Class<?>> classes = classDefinitions.stream()
+                .filter(classDefinition -> classDefinition.isEnabled(environment))
+                .map(ClassDefinition::loadClass)
+                .filter(Objects::nonNull).collect(Collectors.toList());
 
         DefaultListableBeanFactory defaultListableBeanFactory = new DefaultListableBeanFactory();
 
@@ -100,7 +94,7 @@ public class SpringfoxMojo extends AbstractMojo {
             Swagger swagger = mapper.mapDocumentation(documentation);
             swagger.setHost("$host");
 
-            SwaggerTransformationContext context = createSwaggerTransformationContext(swagger, null);
+            SwaggerTransformationContext<HttpServletRequest> context = createSwaggerTransformationContext(swagger, null);
             final WebMvcBasePathAndHostnameTransformationFilter filter = new WebMvcBasePathAndHostnameTransformationFilter(servletEnvironment);
             context = context.next(filter.transform(context));
             swagger = context.getSpecification();
@@ -123,8 +117,8 @@ public class SpringfoxMojo extends AbstractMojo {
     }
 
     private void resolveAutoConfigurations(final File dependencyFile, List<URL> autoConfigs) {
-        try(ZipFile zipFile = new ZipFile(dependencyFile)) {
-            ZipEntry zipEntry = zipFile.getEntry("META-INF/spring.factories");
+        try(final ZipFile zipFile = new ZipFile(dependencyFile)) {
+            final ZipEntry zipEntry = zipFile.getEntry("META-INF/spring.factories");
 
             if (zipEntry != null) {
                 final InputStream inputStream = zipFile.getInputStream(zipEntry);
@@ -142,7 +136,7 @@ public class SpringfoxMojo extends AbstractMojo {
                     autoConfigs.addAll(configLocations);
                 }
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
     }

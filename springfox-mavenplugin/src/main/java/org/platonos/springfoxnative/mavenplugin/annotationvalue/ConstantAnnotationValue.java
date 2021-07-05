@@ -1,6 +1,6 @@
 package org.platonos.springfoxnative.mavenplugin.annotationvalue;
 
-public class ConstantAnnotationValue implements org.platonos.springfoxnative.mavenplugin.annotationvalue.AnnotationValue {
+public class ConstantAnnotationValue implements AnnotationValue {
 
     private final Object value;
 

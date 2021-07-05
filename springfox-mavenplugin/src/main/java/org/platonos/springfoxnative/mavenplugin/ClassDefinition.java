@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class ClassDefinition {
 
     private String className;
-    private final Map<String, List<org.platonos.springfoxnative.mavenplugin.Annotation>> annotationsMap = new HashMap<>();
+    private final Map<String, List<Annotation>> annotationsMap = new HashMap<>();
 
     public void setClassName(final String className) {
         this.className = className;
@@ -23,17 +23,17 @@ public class ClassDefinition {
 
     public void addAnnotation(final String annotationClassName,
                               final org.platonos.springfoxnative.mavenplugin.Annotation annotation) {
-        final List<org.platonos.springfoxnative.mavenplugin.Annotation> list = annotationsMap.computeIfAbsent(annotationClassName, key -> new ArrayList<>());
+        final List<Annotation> list = annotationsMap.computeIfAbsent(annotationClassName, key -> new ArrayList<>());
         list.add(annotation);
     }
 
-    public boolean isEnabled(final org.platonos.springfoxnative.mavenplugin.Environment environment) {
+    public boolean isEnabled(final Environment environment) {
         boolean enabled = true;
 
-        final List<org.platonos.springfoxnative.mavenplugin.Annotation> annotations = annotationsMap.values().stream().flatMap(Collection::stream)
+        final List<Annotation> annotations = annotationsMap.values().stream().flatMap(Collection::stream)
                 .collect(Collectors.toList());
 
-        for (final org.platonos.springfoxnative.mavenplugin.Annotation annotation : annotations) {
+        for (final Annotation annotation : annotations) {
             final String annotationClassName = annotation.getAnnotationClassName();
 
             switch (annotationClassName) {
@@ -102,8 +102,8 @@ public class ClassDefinition {
         return enabled;
     }
 
-    private boolean conditionalOnProperty(final org.platonos.springfoxnative.mavenplugin.Annotation annotation,
-                                          final org.platonos.springfoxnative.mavenplugin.Environment environment) {
+    private boolean conditionalOnProperty(final Annotation annotation,
+                                          final Environment environment) {
         final ConditionalOnProperty conditionalOnProperty = createAnnotationProxy(annotation, ConditionalOnProperty.class);
 
         boolean match = true;
@@ -140,8 +140,8 @@ public class ClassDefinition {
         return match;
     }
 
-    private boolean conditionalOnClass(final org.platonos.springfoxnative.mavenplugin.Annotation annotation,
-                                       final org.platonos.springfoxnative.mavenplugin.Environment environment) {
+    private boolean conditionalOnClass(final Annotation annotation,
+                                       final Environment environment) {
         final ArrayAnnotationValue value = (ArrayAnnotationValue) annotation.getAnnotationValue("value");
         final List<Type> values = (List<Type>) value.getValue();
 
@@ -154,44 +154,44 @@ public class ClassDefinition {
     }
 
     //TODO
-    private boolean conditionalOnBean(final org.platonos.springfoxnative.mavenplugin.Annotation annotation,
-                                      final org.platonos.springfoxnative.mavenplugin.Environment environment) {
+    private boolean conditionalOnBean(final Annotation annotation,
+                                      final Environment environment) {
         return false;
     }
 
     //TODO
-    private boolean conditionalOnMissingBean(final org.platonos.springfoxnative.mavenplugin.Annotation annotation,
-                                             final org.platonos.springfoxnative.mavenplugin.Environment environment) {
+    private boolean conditionalOnMissingBean(final Annotation annotation,
+                                             final Environment environment) {
         return false;
     }
 
     //TODO
-    private boolean conditional(final org.platonos.springfoxnative.mavenplugin.Annotation annotation,
-                                final org.platonos.springfoxnative.mavenplugin.Environment environment) {
+    private boolean conditional(final Annotation annotation,
+                                final Environment environment) {
         return false;
     }
 
     //TODO
-    private boolean conditionalOnRepositoryType(final org.platonos.springfoxnative.mavenplugin.Annotation annotation,
-                                                final org.platonos.springfoxnative.mavenplugin.Environment environment) {
+    private boolean conditionalOnRepositoryType(final Annotation annotation,
+                                                final Environment environment) {
         return false;
     }
 
     //TODO
-    private boolean conditionalOnSingleCandidate(final org.platonos.springfoxnative.mavenplugin.Annotation annotation,
-                                                 final org.platonos.springfoxnative.mavenplugin.Environment environment) {
+    private boolean conditionalOnSingleCandidate(final Annotation annotation,
+                                                 final Environment environment) {
         return false;
     }
 
     //TODO
-    private boolean conditionalOnWebApplication(final org.platonos.springfoxnative.mavenplugin.Annotation annotation,
-                                                final org.platonos.springfoxnative.mavenplugin.Environment environment) {
+    private boolean conditionalOnWebApplication(final Annotation annotation,
+                                                final Environment environment) {
         return false;
     }
 
     //TODO
-    private boolean conditionalOnResource(final org.platonos.springfoxnative.mavenplugin.Annotation annotation,
-                                          final org.platonos.springfoxnative.mavenplugin.Environment environment) {
+    private boolean conditionalOnResource(final Annotation annotation,
+                                          final Environment environment) {
         return false;
     }
 
@@ -204,7 +204,7 @@ public class ClassDefinition {
         }
     }
 
-    private <A> A createAnnotationProxy(final org.platonos.springfoxnative.mavenplugin.Annotation annotation, final Class<A> annotationClass) {
+    private <A> A createAnnotationProxy(final Annotation annotation, final Class<A> annotationClass) {
         final ClassLoader loader = getClass().getClassLoader();
         return (A) Proxy.newProxyInstance(
                 loader,
@@ -232,14 +232,14 @@ public class ClassDefinition {
 
 class AnnotationInvocationHandler implements InvocationHandler {
 
-    private final org.platonos.springfoxnative.mavenplugin.Annotation annotation;
+    private final Annotation annotation;
 
-    public AnnotationInvocationHandler(final org.platonos.springfoxnative.mavenplugin.Annotation annotation) {
+    public AnnotationInvocationHandler(final Annotation annotation) {
         this.annotation = annotation;
     }
 
     @Override
-    public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+    public Object invoke(final Object proxy, final Method method, final Object[] args) {
         final String methodName = method.getName();
 
         Class<?> returnType = method.getReturnType();

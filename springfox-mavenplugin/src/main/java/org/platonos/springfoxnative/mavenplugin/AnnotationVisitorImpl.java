@@ -8,7 +8,7 @@ import java.util.Objects;
 
 public class AnnotationVisitorImpl extends AnnotationVisitor {
 
-    private org.platonos.springfoxnative.mavenplugin.Annotation annotation;
+    private final org.platonos.springfoxnative.mavenplugin.Annotation annotation;
 
     public AnnotationVisitorImpl(int api, org.platonos.springfoxnative.mavenplugin.Annotation annotation) {
         super(api);
