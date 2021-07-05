@@ -1,4 +1,4 @@
-package org.platonos.springfoxnative.mavenplugin.annotationvalue;
+package org.platonos.springfoxnative.shared.element;
 
 public class ConstantAnnotationValue implements AnnotationValue {
 

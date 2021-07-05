@@ -1,7 +1,7 @@
-package org.platonos.springfoxnative.mavenplugin;
+package org.platonos.springfoxnative.shared.asm.visitor;
 
 import org.objectweb.asm.AnnotationVisitor;
-import org.platonos.springfoxnative.mavenplugin.annotationvalue.ArrayAnnotationValue;
+import org.platonos.springfoxnative.shared.element.ArrayAnnotationValue;
 
 public class ArrayAnnotationVisitor extends AnnotationVisitor {
 

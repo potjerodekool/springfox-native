@@ -1,24 +1,25 @@
-package org.platonos.springfoxnative.mavenplugin;
+package org.platonos.springfoxnative.shared.asm.visitor;
 
 import org.objectweb.asm.AnnotationVisitor;
-import org.platonos.springfoxnative.mavenplugin.annotationvalue.ArrayAnnotationValue;
-import org.platonos.springfoxnative.mavenplugin.annotationvalue.ConstantAnnotationValue;
+import org.platonos.springfoxnative.shared.element.ArrayAnnotationValue;
+import org.platonos.springfoxnative.shared.element.ConstantAnnotationValue;
+import org.platonos.springfoxnative.shared.element.AnnotationMirror;
 
 import java.util.Objects;
 
 public class AnnotationVisitorImpl extends AnnotationVisitor {
 
-    private final org.platonos.springfoxnative.mavenplugin.Annotation annotation;
+    private final AnnotationMirror annotationMirror;
 
-    public AnnotationVisitorImpl(int api, org.platonos.springfoxnative.mavenplugin.Annotation annotation) {
+    public AnnotationVisitorImpl(int api, AnnotationMirror annotationMirror) {
         super(api);
-        this.annotation = annotation;
+        this.annotationMirror = annotationMirror;
     }
 
     @Override
     public void visit(String name, Object value) {
         Objects.requireNonNull(name);
-        annotation.addAnnotationValue(name, new ConstantAnnotationValue(value));
+        annotationMirror.addAnnotationValue(name, new ConstantAnnotationValue(value));
     }
 
     @Override
@@ -34,8 +35,8 @@ public class AnnotationVisitorImpl extends AnnotationVisitor {
     @Override
     public AnnotationVisitor visitArray(String name) {
         final ArrayAnnotationValue annotationValue = new ArrayAnnotationValue();
-        annotation.addAnnotationValue(name, annotationValue);
-        return new org.platonos.springfoxnative.mavenplugin.ArrayAnnotationVisitor(api, annotationValue);
+        annotationMirror.addAnnotationValue(name, annotationValue);
+        return new ArrayAnnotationVisitor(api, annotationValue);
     }
 
     @Override

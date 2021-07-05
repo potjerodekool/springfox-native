@@ -1,16 +1,14 @@
-package org.platonos.springfoxnative.mavenplugin;
-
-import org.platonos.springfoxnative.mavenplugin.annotationvalue.AnnotationValue;
+package org.platonos.springfoxnative.shared.element;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class Annotation {
+public class AnnotationMirror {
 
     private final String annotationClassName;
     private final Map<String, AnnotationValue> annotationValues = new HashMap<>();
 
-    public Annotation(final String annotationClassName) {
+    public AnnotationMirror(final String annotationClassName) {
         this.annotationClassName = annotationClassName;
     }
 

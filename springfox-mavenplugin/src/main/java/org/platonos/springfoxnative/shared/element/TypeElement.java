@@ -1,9 +1,8 @@
-package org.platonos.springfoxnative.mavenplugin;
+package org.platonos.springfoxnative.shared.element;
 
 import org.objectweb.asm.Type;
-import org.platonos.springfoxnative.mavenplugin.annotationvalue.AnnotationValue;
-import org.platonos.springfoxnative.mavenplugin.annotationvalue.ArrayAnnotationValue;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.env.Environment;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
@@ -12,81 +11,81 @@ import java.lang.reflect.Proxy;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ClassDefinition {
+public class TypeElement {
 
     private String className;
-    private final Map<String, List<Annotation>> annotationsMap = new HashMap<>();
+    private final Map<String, List<AnnotationMirror>> annotationsMap = new HashMap<>();
 
     public void setClassName(final String className) {
         this.className = className;
     }
 
     public void addAnnotation(final String annotationClassName,
-                              final org.platonos.springfoxnative.mavenplugin.Annotation annotation) {
-        final List<Annotation> list = annotationsMap.computeIfAbsent(annotationClassName, key -> new ArrayList<>());
-        list.add(annotation);
+                              final AnnotationMirror annotationMirror) {
+        final List<AnnotationMirror> list = annotationsMap.computeIfAbsent(annotationClassName, key -> new ArrayList<>());
+        list.add(annotationMirror);
     }
 
     public boolean isEnabled(final Environment environment) {
         boolean enabled = true;
 
-        final List<Annotation> annotations = annotationsMap.values().stream().flatMap(Collection::stream)
+        final List<AnnotationMirror> annotationMirrors = annotationsMap.values().stream().flatMap(Collection::stream)
                 .collect(Collectors.toList());
 
-        for (final Annotation annotation : annotations) {
-            final String annotationClassName = annotation.getAnnotationClassName();
+        for (final AnnotationMirror annotationMirror : annotationMirrors) {
+            final String annotationClassName = annotationMirror.getAnnotationClassName();
 
             switch (annotationClassName) {
                 case "org.springframework.boot.autoconfigure.condition.ConditionalOnProperty" : {
-                    if (!conditionalOnProperty(annotation, environment)) {
+                    if (!conditionalOnProperty(annotationMirror, environment)) {
                         enabled = false;
                     }
                     break;
                 }
                 case "org.springframework.boot.autoconfigure.condition.ConditionalOnClass" : {
-                    if (!conditionalOnClass(annotation, environment)) {
+                    if (!conditionalOnClass(annotationMirror, environment)) {
                         enabled = false;
                     }
                     break;
                 }
                 case "org.springframework.boot.autoconfigure.condition.ConditionalOnBean" : {
-                    if (!conditionalOnBean(annotation, environment)) {
+                    if (!conditionalOnBean(annotationMirror, environment)) {
                         enabled = false;
                     }
                     break;
                 }
                 case "org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean": {
-                    if (!conditionalOnMissingBean(annotation, environment)) {
+                    if (!conditionalOnMissingBean(annotationMirror, environment)) {
                         enabled = false;
                     }
                     break;
                 }
                 case "org.springframework.context.annotation.Conditional": {
-                    if (!conditional(annotation, environment)) {
+                    if (!conditional(annotationMirror, environment)) {
                         enabled = false;
                     }
                     break;
                 }
                 case "org.springframework.boot.autoconfigure.data.ConditionalOnRepositoryType": {
-                    if (!conditionalOnRepositoryType(annotation, environment)) {
+                    if (!conditionalOnRepositoryType(annotationMirror, environment)) {
                         enabled = false;
                     }
                     break;
                 }
                 case "org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate": {
-                    if (!conditionalOnSingleCandidate(annotation, environment)) {
+                    if (!conditionalOnSingleCandidate(annotationMirror, environment)) {
                         enabled = false;
                     }
                     break;
                 }
                 case "org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication": {
-                    if (!conditionalOnWebApplication(annotation, environment)) {
+                    if (!conditionalOnWebApplication(annotationMirror, environment)) {
                         enabled = false;
                     }
                     break;
                 }
                 case "org.springframework.boot.autoconfigure.condition.ConditionalOnResource": {
-                    if (!conditionalOnResource(annotation, environment)) {
+                    if (!conditionalOnResource(annotationMirror, environment)) {
                         enabled = false;
                     }
                     break;
@@ -102,9 +101,9 @@ public class ClassDefinition {
         return enabled;
     }
 
-    private boolean conditionalOnProperty(final Annotation annotation,
+    private boolean conditionalOnProperty(final AnnotationMirror annotationMirror,
                                           final Environment environment) {
-        final ConditionalOnProperty conditionalOnProperty = createAnnotationProxy(annotation, ConditionalOnProperty.class);
+        final ConditionalOnProperty conditionalOnProperty = createAnnotationProxy(annotationMirror, ConditionalOnProperty.class);
 
         boolean match = true;
 
@@ -127,8 +126,8 @@ public class ClassDefinition {
             }
 
 
-            if (environment.hasProperty(propertyName)) {
-                final String propertyValue = environment.getPropertyValue(propertyName);
+            if (environment.containsProperty(propertyName)) {
+                final String propertyValue = environment.getProperty(propertyName);
                 if (!havingValue.equals(propertyValue)) {
                     match = false;
                 }
@@ -140,9 +139,9 @@ public class ClassDefinition {
         return match;
     }
 
-    private boolean conditionalOnClass(final Annotation annotation,
+    private boolean conditionalOnClass(final AnnotationMirror annotationMirror,
                                        final Environment environment) {
-        final ArrayAnnotationValue value = (ArrayAnnotationValue) annotation.getAnnotationValue("value");
+        final ArrayAnnotationValue value = (ArrayAnnotationValue) annotationMirror.getAnnotationValue("value");
         final List<Type> values = (List<Type>) value.getValue();
 
         final List<String> classNames = values.stream()
@@ -154,43 +153,43 @@ public class ClassDefinition {
     }
 
     //TODO
-    private boolean conditionalOnBean(final Annotation annotation,
+    private boolean conditionalOnBean(final AnnotationMirror annotationMirror,
                                       final Environment environment) {
         return false;
     }
 
     //TODO
-    private boolean conditionalOnMissingBean(final Annotation annotation,
+    private boolean conditionalOnMissingBean(final AnnotationMirror annotationMirror,
                                              final Environment environment) {
         return false;
     }
 
     //TODO
-    private boolean conditional(final Annotation annotation,
+    private boolean conditional(final AnnotationMirror annotationMirror,
                                 final Environment environment) {
         return false;
     }
 
     //TODO
-    private boolean conditionalOnRepositoryType(final Annotation annotation,
+    private boolean conditionalOnRepositoryType(final AnnotationMirror annotationMirror,
                                                 final Environment environment) {
         return false;
     }
 
     //TODO
-    private boolean conditionalOnSingleCandidate(final Annotation annotation,
+    private boolean conditionalOnSingleCandidate(final AnnotationMirror annotationMirror,
                                                  final Environment environment) {
         return false;
     }
 
     //TODO
-    private boolean conditionalOnWebApplication(final Annotation annotation,
+    private boolean conditionalOnWebApplication(final AnnotationMirror annotationMirror,
                                                 final Environment environment) {
         return false;
     }
 
     //TODO
-    private boolean conditionalOnResource(final Annotation annotation,
+    private boolean conditionalOnResource(final AnnotationMirror annotationMirror,
                                           final Environment environment) {
         return false;
     }
@@ -204,12 +203,12 @@ public class ClassDefinition {
         }
     }
 
-    private <A> A createAnnotationProxy(final Annotation annotation, final Class<A> annotationClass) {
+    private <A> A createAnnotationProxy(final AnnotationMirror annotationMirror, final Class<A> annotationClass) {
         final ClassLoader loader = getClass().getClassLoader();
         return (A) Proxy.newProxyInstance(
                 loader,
                 new Class[]{annotationClass},
-                new AnnotationInvocationHandler(annotation)
+                new AnnotationInvocationHandler(annotationMirror)
         );
     }
 
@@ -232,10 +231,10 @@ public class ClassDefinition {
 
 class AnnotationInvocationHandler implements InvocationHandler {
 
-    private final Annotation annotation;
+    private final AnnotationMirror annotationMirror;
 
-    public AnnotationInvocationHandler(final Annotation annotation) {
-        this.annotation = annotation;
+    public AnnotationInvocationHandler(final AnnotationMirror annotationMirror) {
+        this.annotationMirror = annotationMirror;
     }
 
     @Override
@@ -243,7 +242,7 @@ class AnnotationInvocationHandler implements InvocationHandler {
         final String methodName = method.getName();
 
         Class<?> returnType = method.getReturnType();
-        AnnotationValue annotationValue = annotation.getAnnotationValue(methodName);
+        AnnotationValue annotationValue = annotationMirror.getAnnotationValue(methodName);
 
         if (annotationValue == null) {
             if (returnType.isPrimitive()) {
